@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 
-export const AddCategoriesSchema = {
+const AddCategoriesSchema = {
     name: z.string().min(1, 'Category name is required'),
     parentId: z.string().optional(),
     image: z.string().min(1, 'Category image is required'),
