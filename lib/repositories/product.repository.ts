@@ -6,7 +6,7 @@ export class ProductRepository {
     async findAll(options?: {
         skip?: number
         take?: number
-        include?: Prisma.ProductInclude
+        include?: any
     }) {
         return prisma.product.findMany({
             skip: options?.skip,
@@ -16,14 +16,14 @@ export class ProductRepository {
         })
     }
 
-    async findById(id: string, include?: Prisma.ProductInclude) {
+    async findById(id: string, include?: any) {
         return prisma.product.findUnique({
             where: { id },
             include: include || { category: true, inquiries: true,technicalParameters:true }
         })
     }
 
-    async findBySlug(slug: string, include?: Prisma.ProductInclude) {
+    async findBySlug(slug: string, include?: any) {
         return prisma.product.findUnique({
             where: { slug },
             include: include || { category: true }
@@ -47,7 +47,7 @@ export class ProductRepository {
         skip?: number
         take?: number
     }) {
-        const where: Prisma.ProductWhereInput = {
+        const where: any = {
             //   @ts-ignore
             OR: [
                 // Text search
@@ -87,7 +87,7 @@ export class ProductRepository {
     // Add these methods to your ProductRepository class
 
 // CREATE - Add new product
-async count(where?: Prisma.ProductWhereInput) {
+async count(where?: any) {
     return prisma.product.count({ where })
 }
 

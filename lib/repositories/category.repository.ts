@@ -3,7 +3,7 @@ import { Prisma } from '@prisma/client'
 
 export class CategoryRepository {
   async findAll(options?: {
-    include?: Prisma.CategoryInclude
+    include?: any
   }) {
     return prisma.category.findMany({
       include: options?.include,
@@ -11,14 +11,14 @@ export class CategoryRepository {
     })
   }
 
-  async findById(id: string, include?: Prisma.CategoryInclude) {
+  async findById(id: string, include?: any) {
     return prisma.category.findUnique({
       where: { id },
       include: include || { products: true, children: true, parent: true }
     })
   }
 
-  async findBySlug(slug: string, include?: Prisma.CategoryInclude) {
+  async findBySlug(slug: string, include?: any) {
     return prisma.category.findUnique({
       where: { slug },
       include: include || { products: true, children: true, parent: true }
