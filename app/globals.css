@@ -10,7 +10,6 @@
 :root {
   --background: #ffffff;
   --foreground: #1f2937; /* slate-800 */
-
   --card: #ffffff;
   --card-foreground: #1f2937; /* slate-800 */
   --popover: #ffffff;
@@ -43,6 +42,10 @@
   --sidebar-border: #e5e7eb;
   --sidebar-ring: #94a3b8;
   --brand-start: #10b981; /* emerald-500 */
+
+
+
+  
   --brand-end: #059669; /* teal-600 */
 }
 

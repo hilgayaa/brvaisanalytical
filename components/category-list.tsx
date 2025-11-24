@@ -13,6 +13,7 @@ interface CategoryListProps {
 }
 
 export function CategoryList({ nodes, selectedId, onSelect }: CategoryListProps) {
+
   if (!nodes?.length) return null
 
   return (
@@ -29,7 +30,7 @@ export function CategoryList({ nodes, selectedId, onSelect }: CategoryListProps)
                 : "w-full text-left px-3 py-2 rounded-md text-sm hover:bg-muted"
             }
           >
-            {node.name}
+            <h1 className="text-xl font-medium">{node.name}</h1>
           </button>
 
           {node.children && node.children.length > 0 && (

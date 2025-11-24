@@ -13,7 +13,8 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 import { Button } from "@/components/ui/button"
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { CarouselHero } from "@/components/carousel-hero"
 
 const fetcher = async (url: string) => {
   try {
@@ -31,6 +32,7 @@ const fetcher = async (url: string) => {
 
 
 export default function ProductsPage() {
+  const [isMdOrLess, setIsMdOrLess] = useState(false);
   const sp = useSearchParams()
   const router = useRouter()
   const page = Number(sp.get("page") || "1")
@@ -38,37 +40,56 @@ export default function ProductsPage() {
   const qs = sp.toString()
   const { data } = useSWR(`/api/products?${qs || `page=${page}&limit=${limit}`}`, fetcher)
   const items = data?.products ?? data ?? []
-
+  if (!Array.isArray(items)) {
+    return (
+      <>
+        <h1>
+          item doesnot exists
+        </h1>
+      </>
+    )
+  }
   const total = data?.total || 0
+  function handleCategoryClick(categorySlug: string) {
+    const params = new URLSearchParams(sp as any)
 
+    if (sp.get("category") === categorySlug) {
+      params.delete("category")
+    } else {
+      params.set("category", categorySlug)
+      params.set("page", "1")
+    }
+
+    router.push(`/products?${params.toString()}`)
+  } 
   const nextPage = () => {
     const params = new URLSearchParams(sp as any)
     params.set("page", String(page + 1))
     router.push(`/products?${params.toString()}`)
   }
 
+   useEffect(() => {
+    const media = window.matchMedia("(min-width: 769px)");
+
+    console.log("Media matches:", media.matches);
+    setIsMdOrLess(media.matches);
+
+    const listener = () => setIsMdOrLess(media.matches);
+    media.addEventListener("change", listener);
+
+    return () => media.removeEventListener("change", listener);
+  }, []);
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
-      <Breadcrumb>
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink href="/">Home</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage>Products</BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
-
+      <CarouselHero/>
       <div className="mt-4 grid gap-6 md:grid-cols-[280px_1fr]">
-        <FilterSidebar className="sticky top-[5rem] max-h-[70vh] space-y-6 overflow-auto pr-2" />
+        <FilterSidebar hidden={isMdOrLess} handleCategoryClick={handleCategoryClick} className="sticky top-[5rem] max-h-[70vh] space-y-6 overflow-auto pr-2" />
         <section aria-label="Products grid" className="space-y-4">
           <h1 className="text-balance text-xl font-semibold">Products</h1>
           <p className="text-sm text-muted-foreground">
             {total} result{total === 1 ? "" : "s"} found
           </p>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols- xl:grid-cols-3">
             {items.map((p: any) => (
               <ProductCard key={p.slug} product={p} />
             ))}

@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma'
-import { Product, Prisma } from '@prisma/client'
+import {  Prisma } from '@prisma/client'
 import { SearchFilters } from '@/lib/types'
 
 export class ProductRepository {
@@ -19,7 +19,7 @@ export class ProductRepository {
     async findById(id: string, include?: Prisma.ProductInclude) {
         return prisma.product.findUnique({
             where: { id },
-            include: include || { category: true, inquiries: true }
+            include: include || { category: true, inquiries: true,technicalParameters:true }
         })
     }
 
@@ -55,20 +55,10 @@ export class ProductRepository {
                     OR: [
                         { name: { contains: query, mode: 'insensitive' } },
                         { description: { contains: query, mode: 'insensitive' } },
-                        { brand: { contains: query, mode: 'insensitive' } }
                     ]
                 } : {},
                 // Filters
                 filters?.category ? { categoryId: filters.category } : {},
-                filters?.brand ? { brand: { equals: filters.brand, mode: 'insensitive' } } : {},
-                filters?.inStock !== undefined ? { inStock: filters.inStock } : {},
-                filters?.featured !== undefined ? { featured: filters.featured } : {},
-                filters?.priceRange ? {
-                    price: {
-                        gte: filters.priceRange[0],
-                        lte: filters.priceRange[1]
-                    }
-                } : {}
             ].filter(condition => Object.keys(condition).length > 0)
         }
 
@@ -81,14 +71,6 @@ export class ProductRepository {
         })
     }
 
-    async getFeatured(limit = 8) {
-        return prisma.product.findMany({
-            where: { featured: true },
-            include: { category: true },
-            take: limit,
-            orderBy: { createdAt: 'desc' }
-        })
-    }
 
     async getRelated(productId: string, categoryId: string, limit = 4) {
         return prisma.product.findMany({
@@ -102,30 +84,149 @@ export class ProductRepository {
         })
     }
 
-    async getBrands() {
-        const result = await prisma.product.groupBy({
-            by: ['brand'],
-            where: { brand: { not: null } },
-            _count: { brand: true }
-        })
+    // Add these methods to your ProductRepository class
 
-        // @ts-ignore
-        return result.map(item => ({
-            name: item.brand!,
-            count: item._count.brand
-        }))
+// CREATE - Add new product
+async count(where?: Prisma.ProductWhereInput) {
+    return prisma.product.count({ where })
+}
+
+async create(data: {
+    name: string
+    description: string
+    shortDesc?: string
+    images: string[]
+    categoryId: string,
+    manualLink:string,
+    technicalParameters?: { name: string; value: string }[]
+
+}) {
+    // Auto-generate slug from name
+    let slug = data.name
+
+    // Ensure slug is unique
+    const existingProduct = await prisma.product.findUnique({
+        where: { slug }
+    })
+
+    if (existingProduct) {
+        slug = `${slug}-${Date.now()}`
     }
 
-    async getPriceRange() {
-        const result = await prisma.product.aggregate({
-            _min: { price: true },
-            _max: { price: true }
+    return prisma.product.create({
+    // @ts-ignore
+        data: {
+            name: data.name,
+            slug: slug,
+            description: data.description,
+            images: data.images,
+            manualLink: data.manualLink,
+            category: {
+                connect: { id: data.categoryId }
+            },
+            technicalParameters:{
+                create: data.technicalParameters?.map(param => ({
+                    name: param.name,
+                    value: param.value
+                }))
+            }
+        },
+        include: { category: true }
+    })
+}
+
+// UPDATE - Update existing product
+async update(id: string, data: {
+    name?: string
+    description?: string
+    shortDesc?: string
+    images?: string[]
+    specifications?: any
+    features?: string[]
+    categoryId?: string
+    brand?: string
+    currency?: string
+    inStock?: boolean
+    featured?: boolean
+}) {
+    const updateData: any = {}
+
+    // Only update fields that are provided
+    if (data.name !== undefined) {
+        updateData.name = data.name
+        // Update slug if name changes
+        const newSlug = data.name
+        const existingProduct = await prisma.product.findFirst({
+            where: { 
+                slug: newSlug,
+                id: { not: id }
+            }
         })
 
-        return {
-            min: result._min.price || 0,
-            max: result._max.price || 0
+        if (!existingProduct) {
+            updateData.slug = newSlug
+        } else {
+            updateData.slug = `${newSlug}-${Date.now()}`
         }
     }
 
+    if (data.description !== undefined) updateData.description = data.description
+    if (data.shortDesc !== undefined) updateData.shortDesc = data.shortDesc
+    if (data.images !== undefined) updateData.images = data.images
+    if (data.specifications !== undefined) updateData.specifications = data.specifications
+    if (data.features !== undefined) updateData.features = data.features
+    if (data.brand !== undefined) updateData.brand = data.brand
+    if (data.currency !== undefined) updateData.currency = data.currency
+    if (data.inStock !== undefined) updateData.inStock = data.inStock
+    if (data.featured !== undefined) updateData.featured = data.featured
+
+    // Handle category update separately
+    if (data.categoryId !== undefined) {
+        updateData.category = {
+            connect: { id: data.categoryId }
+        }
+    }
+
+    return prisma.product.update({
+        where: { id },
+        data: updateData,
+        include: { category: true }
+    })
+}
+
+// DELETE - Delete product
+async delete(id: string) {
+    // First delete related inquiries
+    await prisma.inquiry.deleteMany({
+        where: { productId: id }
+    })
+
+    // Then delete the product
+    await prisma.technicalParameter.deleteMany({        
+        where: { productId: id }
+    })    
+
+    return prisma.product.delete({
+        where: { id }
+    })
+}
+
+// BULK DELETE - Delete multiple products
+async bulkDelete(ids: string[]) {
+    // Delete related inquiries first
+    await prisma.inquiry.deleteMany({
+        where: { productId: { in: ids } }
+    })
+
+    // Delete products
+    return prisma.product.deleteMany({
+        where: { id: { in: ids } }
+    })
+}
+
+// TOGGLE FEATURED - Quick toggle featured status
+// UPDATE STOCK - Quick update stock status
+
+// BULK UPDATE FEATURED
+// DUPLICATE PRODUCT
 }

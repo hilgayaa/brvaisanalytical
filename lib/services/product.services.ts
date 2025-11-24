@@ -63,7 +63,6 @@ export class ProductService {
   }
 
   async getFeaturedProducts() {
-    return this.productRepo.getFeatured()
   }
 
   async getProductsByCategory(categorySlug: string, page = 1, limit = 12) {
@@ -84,17 +83,13 @@ export class ProductService {
     }
   }
 
-  async getFiltersData() {
-    const [brands, priceRange, categories] = await Promise.all([
-      this.productRepo.getBrands(),
-      this.productRepo.getPriceRange(),
-      this.categoryRepo.findAll()
-    ])
+  async deleteProduct(productId: string) {
+    // Delete related inquiries first
+        
+      return await this.productRepo.delete(productId)
+        
+    // Delete the product
+  
+}
 
-    return {
-      brands,
-      priceRange,
-      categories
-    }
-  }
 }

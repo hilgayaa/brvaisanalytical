@@ -10,40 +10,29 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 type Category = {
   id: string
   name: string
-  children?: Category[]
+  parentId?:string
 }
 
 const fetcher = async (url: string) => {
   const res = await fetch(url)
+  console.log(res, 'check category response') // this logs the Response object
   return res.json()
 }
 
-interface FilterSidebarProps {
-  className?: string
-}
 
-export function FilterSidebar({ className }: FilterSidebarProps) {
+export function FilterSidebar({ className,handleCategoryClick,hidden }: {
+  className:string,
+  hidden:boolean,
+  handleCategoryClick: (categorySlug: string) => void
+}) {
   const sp = useSearchParams()
   const router = useRouter()
   const selectedCategory = sp.get("category")
   const [open, setOpen] = useState(false)
 
-  const { data } = useSWR<Category[]>(`/api/categories?hierarchy=true`, fetcher)
+  const { data } = useSWR<Category[]>(`/api/categories/hirearchy`, fetcher)
   const categories = (data || []) as Category[]
 
-  const handleCategoryClick = (categorySlug: string) => {
-    const params = new URLSearchParams(sp as any)
-
-    if (selectedCategory === categorySlug) {
-      params.delete("category")
-    } else {
-      params.set("category", categorySlug)
-      params.set("page", "1")
-    }
-
-    router.push(`/products?${params.toString()}`)
-    setOpen(false) // close mobile sheet if open
-  }
 
   const clearFilters = () => {
     router.push("/products")
@@ -73,7 +62,7 @@ export function FilterSidebar({ className }: FilterSidebarProps) {
   return (
     <>
       {/* Mobile: Sheet-triggered category sidebar */}
-      <div className="md:hidden">
+      <div className={hidden?"hidden":"block"} >
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
             <Button variant="outline" className="w-full justify-between bg-transparent">
@@ -81,7 +70,7 @@ export function FilterSidebar({ className }: FilterSidebarProps) {
               {selectedCategory ? <span className="text-xs text-muted-foreground">Selected</span> : null}
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="w-[18rem]">
+          <SheetContent side="left" className="w-[18rem] bg-white">
             <SheetHeader>
               <SheetTitle>Categories</SheetTitle>
             </SheetHeader>
@@ -93,7 +82,7 @@ export function FilterSidebar({ className }: FilterSidebarProps) {
       </div>
 
       {/* Desktop: persistent sidebar */}
-      <aside className={cn("space-y-6 hidden md:block", className)}>
+      <aside className={cn(`space-y-6 ${!hidden ? "hidden" : "block"} `, className)}>
         <CategorySection />
       </aside>
     </>

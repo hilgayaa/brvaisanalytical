@@ -6,6 +6,7 @@ import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useState } from "react"
 import { Menu, Microscope, Search } from "lucide-react"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
@@ -25,7 +26,7 @@ export function SiteHeader() {
   const [open, setOpen] = useState(false)
 
   const submit = (e?: React.FormEvent) => {
-    e?.preventDefault()
+       e?.preventDefault()
     const qs = q ? `?q=${encodeURIComponent(q)}` : ""
     router.push(`/products${qs}`)
     setOpen(false)
@@ -35,9 +36,15 @@ export function SiteHeader() {
     <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-3">
         <Link href="/" className="flex items-center gap-2 font-medium">
-          <Microscope className="h-6 w-6 text-primary" aria-hidden />
-          <span className="text-balance">Lab Equipment</span>
+          <Image
+            src="/favicon.ico"
+            alt="Bravais Logo"
+            width={720}     // real size (keep it!)
+            height={320}     // real size (keep it!)
+            className="h-20 w-auto px-2"   // << forces visible size
+          />
         </Link>
+
 
         <nav className="ml-6 hidden items-center gap-6 text-sm md:flex">
           {NAV.map((item) => (
@@ -68,10 +75,10 @@ export function SiteHeader() {
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
               <Button variant="outline" size="icon" aria-label="Open menu">
-                <Menu className="h-5 w-5" />
+                <Menu className="h-5 w-5 " />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-80">
+            <SheetContent side="right" className="w-80 bg-white">
               <SheetHeader>
                 <SheetTitle className="flex items-center gap-2">
                   <Microscope className="h-5 w-5 text-primary" />

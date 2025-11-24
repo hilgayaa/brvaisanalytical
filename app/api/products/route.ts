@@ -11,18 +11,9 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '12')
     const query = searchParams.get('q') || ''
     const category = searchParams.get('category') || undefined
-    // const brand = searchParams.get('brand') || undefined
-    // const featured = searchParams.get('featured') === 'true' ? true : undefined
-    // const inStock = searchParams.get('inStock') === 'true' ? true : undefined
-    // const minPrice = searchParams.get('minPrice')
-    // const maxPrice = searchParams.get('maxPrice')
 
     const filters: SearchFilters = {
       category,
-      // brand,
-      // featured,
-      // inStock,
-      // priceRange: minPrice && maxPrice ? [parseFloat(minPrice), parseFloat(maxPrice)] : undefined
     }
     let result
     if (query || Object.values(filters).some(f => f !== undefined)) {

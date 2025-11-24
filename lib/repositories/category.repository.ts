@@ -28,7 +28,7 @@ export class CategoryRepository {
   async findRootCategories() {
     return prisma.category.findMany({
       where: { parentId: null },
-      include: { 
+      include: {
         children: {
           include: { _count: { select: { products: true } } }
         },
@@ -41,7 +41,7 @@ export class CategoryRepository {
   async findByParent(parentId: string) {
     return prisma.category.findMany({
       where: { parentId },
-      include: { 
+      include: {
         _count: { select: { products: true } }
       },
       orderBy: { name: 'asc' }
@@ -67,4 +67,28 @@ export class CategoryRepository {
     const rootCategories = categories.filter(cat => !cat.parentId)
     return rootCategories
   }
+
+async deletebyId(id: string) {
+
+  // 1. Delete technical parameters of products in this category
+  await prisma.technicalParameter.deleteMany({
+    where: {
+      product: {
+        categoryId: id
+      }
+    }
+  });
+
+  // 2. Delete products in this category
+  await prisma.product.deleteMany({
+    where: { categoryId: id }
+  });
+
+  // 3. Delete category
+  return prisma.category.delete({
+    where: { id }
+  });
 }
+
+}
+

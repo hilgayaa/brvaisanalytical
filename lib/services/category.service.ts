@@ -7,7 +7,7 @@ export class CategoryService {
     return this.categoryRepo.findAll()
   }
 
-  async getCategoryHierarchy() {
+  async getCategoryHierarchy() { 
     return this.categoryRepo.getCategoryHierarchy()
   }
 
@@ -21,5 +21,8 @@ export class CategoryService {
 
   async getRootCategories() {
     return this.categoryRepo.findRootCategories()
+  }
+  async deleteCategory(id: string) {
+    return this.categoryRepo.deletebyId(id)
   }
 }

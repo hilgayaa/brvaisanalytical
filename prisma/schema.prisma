@@ -6,11 +6,15 @@
 
 generator client {
   provider = "prisma-client-js"
+
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+  relationMode = "prisma"
+  extensions   = []
 }
 
 
@@ -19,11 +23,11 @@ model Category {
   name        String
   slug        String    @unique
   description String?
-  image       String?
+  image       String
   parentId    String?
   parent      Category? @relation("CategoryHierarchy", fields: [parentId], references: [id])
   children    Category[] @relation("CategoryHierarchy")
-  products    Product[]
+  products    Product[] 
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
@@ -35,22 +39,14 @@ model Product {
   name         String
   slug         String        @unique
   description  String
-  shortDesc    String?
   images       String[]
-  specifications Json?
-  features     String[]
   categoryId   String
   category     Category      @relation(fields: [categoryId], references: [id])
-  brand        String?
-  model        String?
-  price        Float?
-  currency     String        @default("USD")
-  inStock      Boolean       @default(true)
-  featured     Boolean       @default(false)
+  manualLink   String
   inquiries    Inquiry[]
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
-
+  technicalParameters TechnicalParameter[] @relation("ProductTechnicalParameters")
   @@map("products")
 }
 
@@ -60,7 +56,6 @@ model Inquiry {
   product   Product  @relation(fields: [productId], references: [id])
   name      String
   email     String
-  company   String?
   phone     String?
   message   String
   status    InquiryStatus @default(PENDING)
@@ -70,6 +65,15 @@ model Inquiry {
   @@map("inquiries")
 }
 
+model TechnicalParameter {
+  id          String   @id @default(cuid())
+  name        String
+  value       String
+  product     Product @relation("ProductTechnicalParameters",fields: [productId], references: [id])
+  productId   String 
+
+  @@map("technical_parameters")
+}
 enum InquiryStatus {
   PENDING
   RESPONDED

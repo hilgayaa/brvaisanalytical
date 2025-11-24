@@ -9,9 +9,14 @@ import { SiteFooter } from "@/components/site-footer"
 import { Suspense } from "react"
 
 export const metadata: Metadata = {
-  title: "Lab Equipment Store",
+  title: "BRAVAIS ANALYTICAL",
   description: "Professional laboratory equipment catalog",
   generator: "v0.app",
+ icons:{
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
+ } 
 }
 
 export default function RootLayout({
